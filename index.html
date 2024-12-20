@@ -68,18 +68,7 @@
             </p>
         </section>
         <section id="memes-container">
-            <div class="meme">
-                <h2>Пример мема 1</h2>
-                <img src="example1.jpg" alt="Мем 1">
-            </div>
-            <div class="meme">
-                <h2>Пример мема 2</h2>
-                <img src="example2.jpg" alt="Мем 2">
-            </div>
-            <div class="meme">
-                <h2>Пример мема 3</h2>
-                <img src="example3.jpg" alt="Мем 3">
-            </div>
+            <!-- Здесь будут отображаться мемы -->
         </section>
         <section>
             <button class="button" id="add-meme-button">Добавить свою шутку или мем</button>
@@ -89,9 +78,76 @@
         <p>&copy; 2024 Каталог шуток и мемов. Все права защищены.</p>
     </footer>
 
-    <!-- Скрипт для загрузки и добавления мема -->
-    <script>
-    document.getElementById('add-meme-button').addEventListener('click', function() {
+    <!-- Firebase SDK подключение -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+      import { getDatabase, ref, set, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+      import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-storage.js";
+
+      // Ваши настройки Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyCSF0HfLue052aUgC66Wbxx2ZYdc-q-2XI",
+        authDomain: "mem-sit.firebaseapp.com",
+        projectId: "mem-sit",
+        storageBucket: "mem-sit.firebasestorage.app",
+        messagingSenderId: "1085202040409",
+        appId: "1:1085202040409:web:da3fabb8a52fb0ddfb1348",
+        measurementId: "G-JL1SQJYQ1M"
+      };
+
+      // Инициализация Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const storage = getStorage(app);
+
+      // Функция для добавления мема в Firebase
+      function addMeme(memeText, memeImageUrl) {
+        const newMemeRef = push(ref(database, 'memes'));
+        set(newMemeRef, {
+          text: memeText,
+          img: memeImageUrl
+        });
+      }
+
+      // Загрузка изображений на Firebase Storage
+      function uploadImage(file) {
+        const storageReference = storageRef(storage, 'images/' + file.name);
+        uploadBytes(storageReference, file).then((snapshot) => {
+          getDownloadURL(snapshot.ref).then((downloadURL) => {
+            const memeText = document.getElementById('meme-text-input').value;
+            addMeme(memeText, downloadURL); // Отправляем мем в базу данных
+          });
+        });
+      }
+
+      // Загрузка мемов при открытии страницы
+      window.onload = function() {
+        const memesContainer = document.getElementById('memes-container');
+        const memesRef = ref(database, 'memes');
+        
+        onChildAdded(memesRef, function(snapshot) {
+          const meme = snapshot.val();
+          const newMeme = document.createElement('div');
+          newMeme.classList.add('meme');
+
+          const memeTitle = document.createElement('h2');
+          memeTitle.textContent = meme.text;
+
+          const memeImg = document.createElement('img');
+          memeImg.src = meme.img;
+          memeImg.alt = meme.text;
+
+          newMeme.appendChild(memeTitle);
+          newMeme.appendChild(memeImg);
+
+          memesContainer.appendChild(newMeme);  // Добавляем мем на страницу
+        });
+      };
+
+      // Открыть форму для добавления мема
+      document.getElementById('add-meme-button').addEventListener('click', function() {
         const inputContainer = document.createElement('div');
         inputContainer.style.textAlign = 'center';
 
@@ -100,6 +156,7 @@
         const memeTextInput = document.createElement('input');
         memeTextInput.type = 'text';
         memeTextInput.style.margin = '10px';
+        memeTextInput.id = 'meme-text-input';
 
         const memeFileLabel = document.createElement('label');
         memeFileLabel.textContent = 'Загрузите изображение:';
@@ -124,66 +181,16 @@
         document.body.appendChild(inputContainer);
 
         submitButton.addEventListener('click', function() {
-            const memeText = memeTextInput.value;
-            const memeFile = memeFileInput.files[0];
+          const memeFile = memeFileInput.files[0];
 
-            if (memeText && memeFile) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const memesContainer = document.getElementById('memes-container');
-
-                    // Создаем новый элемент мема
-                    const newMeme = document.createElement('div');
-                    newMeme.classList.add('meme');
-
-                    const memeTitle = document.createElement('h2');
-                    memeTitle.textContent = memeText;
-
-                    const memeImg = document.createElement('img');
-                    memeImg.src = event.target.result;
-                    memeImg.alt = memeText;
-
-                    newMeme.appendChild(memeTitle);
-                    newMeme.appendChild(memeImg);
-
-                    memesContainer.appendChild(newMeme);
-
-                    // Сохраняем мем в LocalStorage
-                    let memes = JSON.parse(localStorage.getItem('memes')) || [];
-                    memes.push({ text: memeText, img: event.target.result });
-                    localStorage.setItem('memes', JSON.stringify(memes));
-
-                    alert('Ваш мем успешно добавлен!');
-                    inputContainer.remove();
-                };
-
-                reader.readAsDataURL(memeFile);
-            } else {
-                alert('Пожалуйста, введите текст и выберите изображение.');
-            }
+          if (memeFile) {
+            uploadImage(memeFile); // Загружаем изображение на Firebase
+            inputContainer.remove(); // Закрываем форму после загрузки
+          } else {
+            alert('Пожалуйста, выберите изображение.');
+          }
         });
-    });
-
-    // Загрузка мемов из LocalStorage при открытии страницы
-    window.onload = function() {
-        const memes = JSON.parse(localStorage.getItem('memes')) || [];
-        const memesContainer = document.getElementById('memes-container');
-        memes.forEach(meme => {
-            const newMeme = document.createElement('div');
-            newMeme.classList.add('meme');
-
-            const memeTitle = document.createElement('h2');
-            memeTitle.textContent = meme.text;
-
-            const memeImg = document.createElement('img');
-            memeImg.src = meme.img;
-            memeImg.alt = meme.text;
-
-            newMeme.appendChild(memeTitle);
-            newMeme.appendChild(memeImg);
-
-            memesContainer.appendChild(newMeme);
-        });
-    };
+      });
     </script>
-    
+</body>
+</html>
