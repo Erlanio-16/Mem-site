@@ -91,73 +91,99 @@
 
     <!-- Скрипт для загрузки и добавления мема -->
     <script>
-        document.getElementById('add-meme-button').addEventListener('click', function() {
-            const inputContainer = document.createElement('div');
-            inputContainer.style.textAlign = 'center';
+    document.getElementById('add-meme-button').addEventListener('click', function() {
+        const inputContainer = document.createElement('div');
+        inputContainer.style.textAlign = 'center';
 
-            const memeTextLabel = document.createElement('label');
-            memeTextLabel.textContent = 'Введите текст шутки:';
-            const memeTextInput = document.createElement('input');
-            memeTextInput.type = 'text';
-            memeTextInput.style.margin = '10px';
+        const memeTextLabel = document.createElement('label');
+        memeTextLabel.textContent = 'Введите текст шутки:';
+        const memeTextInput = document.createElement('input');
+        memeTextInput.type = 'text';
+        memeTextInput.style.margin = '10px';
 
-            const memeFileLabel = document.createElement('label');
-            memeFileLabel.textContent = 'Загрузите изображение:';
-            const memeFileInput = document.createElement('input');
-            memeFileInput.type = 'file';
-            memeFileInput.accept = 'image/*';
-            memeFileInput.style.margin = '10px';
+        const memeFileLabel = document.createElement('label');
+        memeFileLabel.textContent = 'Загрузите изображение:';
+        const memeFileInput = document.createElement('input');
+        memeFileInput.type = 'file';
+        memeFileInput.accept = 'image/*';
+        memeFileInput.style.margin = '10px';
 
-            const submitButton = document.createElement('button');
-            submitButton.textContent = 'Добавить';
-            submitButton.style.margin = '10px';
-            submitButton.className = 'button';
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Добавить';
+        submitButton.style.margin = '10px';
+        submitButton.className = 'button';
 
-            inputContainer.appendChild(memeTextLabel);
-            inputContainer.appendChild(memeTextInput);
-            inputContainer.appendChild(document.createElement('br'));
-            inputContainer.appendChild(memeFileLabel);
-            inputContainer.appendChild(memeFileInput);
-            inputContainer.appendChild(document.createElement('br'));
-            inputContainer.appendChild(submitButton);
+        inputContainer.appendChild(memeTextLabel);
+        inputContainer.appendChild(memeTextInput);
+        inputContainer.appendChild(document.createElement('br'));
+        inputContainer.appendChild(memeFileLabel);
+        inputContainer.appendChild(memeFileInput);
+        inputContainer.appendChild(document.createElement('br'));
+        inputContainer.appendChild(submitButton);
 
-            document.body.appendChild(inputContainer);
+        document.body.appendChild(inputContainer);
 
-            submitButton.addEventListener('click', function() {
-                const memeText = memeTextInput.value;
-                const memeFile = memeFileInput.files[0];
+        submitButton.addEventListener('click', function() {
+            const memeText = memeTextInput.value;
+            const memeFile = memeFileInput.files[0];
 
-                if (memeText && memeFile) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const memesContainer = document.getElementById('memes-container');
+            if (memeText && memeFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const memesContainer = document.getElementById('memes-container');
 
-                        // Создаём новый элемент мема
-                        const newMeme = document.createElement('div');
-                        newMeme.classList.add('meme');
+                    // Создаем новый элемент мема
+                    const newMeme = document.createElement('div');
+                    newMeme.classList.add('meme');
 
-                        const memeTitle = document.createElement('h2');
-                        memeTitle.textContent = memeText;
+                    const memeTitle = document.createElement('h2');
+                    memeTitle.textContent = memeText;
 
-                        const memeImg = document.createElement('img');
-                        memeImg.src = event.target.result;
-                        memeImg.alt = memeText;
+                    const memeImg = document.createElement('img');
+                    memeImg.src = event.target.result;
+                    memeImg.alt = memeText;
 
-                        newMeme.appendChild(memeTitle);
-                        newMeme.appendChild(memeImg);
+                    newMeme.appendChild(memeTitle);
+                    newMeme.appendChild(memeImg);
 
-                        memesContainer.appendChild(newMeme);
+                    memesContainer.appendChild(newMeme);
 
-                        alert('Ваш мем успешно добавлен!');
-                        inputContainer.remove();
-                    };
+                    // Сохраняем мем в LocalStorage
+                    let memes = JSON.parse(localStorage.getItem('memes')) || [];
+                    memes.push({ text: memeText, img: event.target.result });
+                    localStorage.setItem('memes', JSON.stringify(memes));
 
-                    reader.readAsDataURL(memeFile);
-                } else {
-                    alert('Пожалуйста, введите текст и выберите изображение.');
-                }
-            });
+                    alert('Ваш мем успешно добавлен!');
+                    inputContainer.remove();
+                };
+
+                reader.readAsDataURL(memeFile);
+            } else {
+                alert('Пожалуйста, введите текст и выберите изображение.');
+            }
         });
+    });
+
+    // Загрузка мемов из LocalStorage при открытии страницы
+    window.onload = function() {
+        const memes = JSON.parse(localStorage.getItem('memes')) || [];
+        const memesContainer = document.getElementById('memes-container');
+        memes.forEach(meme => {
+            const newMeme = document.createElement('div');
+            newMeme.classList.add('meme');
+
+            const memeTitle = document.createElement('h2');
+            memeTitle.textContent = meme.text;
+
+            const memeImg = document.createElement('img');
+            memeImg.src = meme.img;
+            memeImg.alt = meme.text;
+
+            newMeme.appendChild(memeTitle);
+            newMeme.appendChild(memeImg);
+
+            memesContainer.appendChild(newMeme);
+        });
+    };
     </script>
-</body>
-</html>
+    
