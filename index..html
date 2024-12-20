@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог шуток и мемов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            font-size: 16px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .meme {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .meme img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #fff;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать в каталог шуток и мемов</h1>
+    </header>
+    <main>
+        <section>
+            <p>
+                Этот сайт - место для веселья, где можно найти лучшие шутки и мемы. Пролистайте вниз, чтобы увидеть подборку смешного контента, или добавьте свою шутку или мем внизу страницы.
+            </p>
+        </section>
+        <section id="memes-container">
+            <div class="meme">
+                <h2>Пример мема 1</h2>
+                <img src="example1.jpg" alt="Мем 1">
+            </div>
+            <div class="meme">
+                <h2>Пример мема 2</h2>
+                <img src="example2.jpg" alt="Мем 2">
+            </div>
+            <div class="meme">
+                <h2>Пример мема 3</h2>
+                <img src="example3.jpg" alt="Мем 3">
+            </div>
+        </section>
+        <section>
+            <button class="button" id="add-meme-button">Добавить свою шутку или мем</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Каталог шуток и мемов. Все права защищены.</p>
+    </footer>
+
+    <!-- Скрипт для загрузки и добавления мема -->
+    <script>
+        document.getElementById('add-meme-button').addEventListener('click', function() {
+            const inputContainer = document.createElement('div');
+            inputContainer.style.textAlign = 'center';
+
+            const memeTextLabel = document.createElement('label');
+            memeTextLabel.textContent = 'Введите текст шутки:';
+            const memeTextInput = document.createElement('input');
+            memeTextInput.type = 'text';
+            memeTextInput.style.margin = '10px';
+
+            const memeFileLabel = document.createElement('label');
+            memeFileLabel.textContent = 'Загрузите изображение:';
+            const memeFileInput = document.createElement('input');
+            memeFileInput.type = 'file';
+            memeFileInput.accept = 'image/*';
+            memeFileInput.style.margin = '10px';
+
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'Добавить';
+            submitButton.style.margin = '10px';
+            submitButton.className = 'button';
+
+            inputContainer.appendChild(memeTextLabel);
+            inputContainer.appendChild(memeTextInput);
+            inputContainer.appendChild(document.createElement('br'));
+            inputContainer.appendChild(memeFileLabel);
+            inputContainer.appendChild(memeFileInput);
+            inputContainer.appendChild(document.createElement('br'));
+            inputContainer.appendChild(submitButton);
+
+            document.body.appendChild(inputContainer);
+
+            submitButton.addEventListener('click', function() {
+                const memeText = memeTextInput.value;
+                const memeFile = memeFileInput.files[0];
+
+                if (memeText && memeFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const memesContainer = document.getElementById('memes-container');
+
+                        // Создаём новый элемент мема
+                        const newMeme = document.createElement('div');
+                        newMeme.classList.add('meme');
+
+                        const memeTitle = document.createElement('h2');
+                        memeTitle.textContent = memeText;
+
+                        const memeImg = document.createElement('img');
+                        memeImg.src = event.target.result;
+                        memeImg.alt = memeText;
+
+                        newMeme.appendChild(memeTitle);
+                        newMeme.appendChild(memeImg);
+
+                        memesContainer.appendChild(newMeme);
+
+                        alert('Ваш мем успешно добавлен!');
+                        inputContainer.remove();
+                    };
+
+                    reader.readAsDataURL(memeFile);
+                } else {
+                    alert('Пожалуйста, введите текст и выберите изображение.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
